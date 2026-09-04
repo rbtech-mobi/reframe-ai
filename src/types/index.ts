@@ -1,10 +1,16 @@
 /**
  * Shared type definitions used across services, hooks and components.
+ * The ReframeResult type mirrors the JSON schema declared in the
+ * system prompt at src/constants/prompts.ts.
  */
 
 export type ReframeResult = {
-  tone: string;
-  interpretations: [string, string, string];
+  originalMessage: string;
+  literalContent: string;
+  userLikelyReading: string;
+  alternativeReadings: [string, string, string];
+  cannotConclude: string[];
+  neutralView: string;
   suggestedReply: string;
 };
 

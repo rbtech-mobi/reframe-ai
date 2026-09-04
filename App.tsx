@@ -1,82 +1,120 @@
 /**
  * Entry point of the ReframeIA application.
- * Renders a design system showcase with multiple glass elements
- * over decorative background blobs for visual reference.
+ * Temporary integration test: sends a fixed ambiguous message
+ * to the Gemini model and renders the parsed structured response.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import {
+  ActivityIndicator,
   Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  View,
 } from 'react-native';
 import { GradientBackground } from './src/components/GradientBackground';
 import { GlassCard } from './src/components/GlassCard';
+import { reframeMessage } from './src/services/generator';
+import type { ReframeResult } from './src/types';
 import { colors } from './src/constants/colors';
 import { spacing, typography } from './src/constants/theme';
 
+const SAMPLE_MESSAGE = 'Você está muito bonito nessa foto.';
+
 export default function App() {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<ReframeResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleTest() {
+    setLoading(true);
+    setResult(null);
+    setError(null);
+    try {
+      const data = await reframeMessage(SAMPLE_MESSAGE);
+      setResult(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <GradientBackground>
       <StatusBar style="light" />
-
-      {/* Decorative color blobs behind the glass to reveal the blur effect */}
-      <View style={styles.blobBlue} />
-      <View style={styles.blobPurple} />
-
       <SafeAreaView style={styles.safe}>
-        <ScrollView
-          contentContainerStyle={styles.container}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView contentContainerStyle={styles.container}>
           <Text style={styles.title}>ReframeIA</Text>
-          <Text style={styles.subtitle}>
-            Reinterpret social messages with a calm perspective.
-          </Text>
+          <Text style={styles.subtitle}>Structured prompt test</Text>
 
-          {/* Primary glass card */}
           <GlassCard style={styles.card}>
-            <Text style={styles.cardTitle}>Design system preview</Text>
-            <Text style={styles.cardBody}>
-              This card demonstrates the glassmorphism effect used
-              throughout the application.
-            </Text>
+            <Text style={styles.cardTitle}>Sample input</Text>
+            <Text style={styles.cardBody}>"{SAMPLE_MESSAGE}"</Text>
           </GlassCard>
 
-          {/* Secondary glass card with different intensity */}
-          <GlassCard intensity={60} style={styles.card}>
-            <Text style={styles.cardTitle}>Higher blur intensity</Text>
-            <Text style={styles.cardBody}>
-              The intensity prop controls how strong the background
-              blur effect appears.
-            </Text>
-          </GlassCard>
-
-          {/* Two side-by-side glass buttons */}
-          <View style={styles.row}>
-            <Pressable style={styles.buttonWrapper}>
-              <GlassCard intensity={50} style={styles.button}>
-                <Text style={styles.buttonText}>Reinterpret</Text>
-              </GlassCard>
-            </Pressable>
-
-            <Pressable style={styles.buttonWrapper}>
-              <GlassCard intensity={50} style={styles.button}>
-                <Text style={styles.buttonText}>Clear</Text>
-              </GlassCard>
-            </Pressable>
-          </View>
-
-          {/* Wide primary button */}
-          <Pressable>
-            <GlassCard intensity={70} style={styles.primaryButton}>
-              <Text style={styles.primaryButtonText}>New analysis</Text>
+          <Pressable onPress={handleTest} disabled={loading}>
+            <GlassCard intensity={60} style={styles.button}>
+              {loading ? (
+                <ActivityIndicator color={colors.textPrimary} />
+              ) : (
+                <Text style={styles.buttonText}>Reframe this message</Text>
+              )}
             </GlassCard>
           </Pressable>
+
+          {result && (
+            <>
+              <GlassCard style={styles.card}>
+                <Text style={styles.cardTitle}>Literal content</Text>
+                <Text style={styles.cardBody}>{result.literalContent}</Text>
+              </GlassCard>
+
+              <GlassCard style={styles.card}>
+                <Text style={styles.cardTitle}>Your likely reading</Text>
+                <Text style={styles.cardBody}>{result.userLikelyReading}</Text>
+              </GlassCard>
+
+              <GlassCard style={styles.card}>
+                <Text style={styles.cardTitle}>Alternative readings</Text>
+                {result.alternativeReadings.map((r, i) => (
+                  <Text key={i} style={styles.cardBody}>
+                    {i + 1}. {r}
+                  </Text>
+                ))}
+              </GlassCard>
+
+              <GlassCard style={styles.card}>
+                <Text style={styles.cardTitle}>Cannot conclude</Text>
+                {result.cannotConclude.map((r, i) => (
+                  <Text key={i} style={styles.cardBody}>
+                    - {r}
+                  </Text>
+                ))}
+              </GlassCard>
+
+              <GlassCard style={styles.card}>
+                <Text style={styles.cardTitle}>Neutral view</Text>
+                <Text style={styles.cardBody}>{result.neutralView}</Text>
+              </GlassCard>
+
+              <GlassCard style={styles.card}>
+                <Text style={styles.cardTitle}>Suggested reply</Text>
+                <Text style={styles.cardBody}>{result.suggestedReply}</Text>
+              </GlassCard>
+            </>
+          )}
+
+          {error && (
+            <GlassCard style={styles.card}>
+              <Text style={[styles.cardTitle, { color: colors.danger }]}>
+                Error
+              </Text>
+              <Text style={styles.cardBody}>{error}</Text>
+            </GlassCard>
+          )}
         </ScrollView>
       </SafeAreaView>
     </GradientBackground>
@@ -84,25 +122,16 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-  },
+  safe: { flex: 1 },
   container: {
     padding: spacing.md,
     paddingTop: spacing.lg,
     gap: spacing.md,
+    paddingBottom: spacing.xl,
   },
-  title: {
-    ...typography.title,
-    color: colors.textPrimary,
-  },
-  subtitle: {
-    ...typography.subtitle,
-    color: colors.textSecondary,
-  },
-  card: {
-    marginTop: spacing.xs,
-  },
+  title: { ...typography.title, color: colors.textPrimary },
+  subtitle: { ...typography.subtitle, color: colors.textSecondary },
+  card: {},
   cardTitle: {
     ...typography.body,
     fontWeight: '600',
@@ -112,53 +141,16 @@ const styles = StyleSheet.create({
   cardBody: {
     ...typography.body,
     color: colors.textSecondary,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  buttonWrapper: {
-    flex: 1,
+    marginBottom: spacing.xs,
   },
   button: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: spacing.sm,
   },
   buttonText: {
     ...typography.body,
     fontWeight: '600',
     color: colors.textPrimary,
-  },
-  primaryButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: spacing.sm,
-  },
-  primaryButtonText: {
-    ...typography.body,
-    fontWeight: '700',
-    color: colors.accent,
-  },
-  // Decorative blobs to reveal the glass blur effect
-  blobBlue: {
-    position: 'absolute',
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: colors.primary,
-    opacity: 0.35,
-    top: 120,
-    left: -60,
-  },
-  blobPurple: {
-    position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: '#8B5CF6',
-    opacity: 0.3,
-    top: 380,
-    right: -80,
   },
 });
