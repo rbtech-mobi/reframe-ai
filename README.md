@@ -1,10 +1,10 @@
 # ReframeIA 
 
-> Aplicativo móvel para reinterpretação empática e calma de mensagens sociais ambíguas, desenvolvido com foco em acessibilidade cognitiva e neurodivergência (TEA - Transtorno do Espectro Autista).
+> Aplicativo móvel para reinterpretação empática e calma de mensagens sociais ambíguas, desenvolvido com foco em acessibilidade cognitiva e neurodivergência (TEA - Transtorno do Espectro Autista e TDAH).
 
 ---
 
-##  Sobre o Projeto
+## 🎯 Sobre o Projeto
 
 O **ReframeIA** é uma tecnologia assistiva voltada para pessoas que enfrentam desafios na decodificação de subtextos sociais, entrelinhas, ironias ou tons em conversas digitais (como em aplicativos de mensagens ou e-mails corporativos). 
 
@@ -15,20 +15,22 @@ Em vez de atuar como um chatbot genérico, o aplicativo funciona como um **media
 
 ---
 
-##  Tecnologias & Arquitetura
+## 📱 Tecnologias & Arquitetura
 
-O projeto foi desenvolvido obrigatoriamente para **Mobile** com **React Native** e ecossistema **Expo**, garantindo performance nativa, ergonomia tátil e total conformidade com diretrizes de acessibilidade.
+O projeto foi desenvolvido para **Mobile** com **React Native** e ecossistema **Expo**, garantindo performance nativa, ergonomia tátil e total conformidade com diretrizes de acessibilidade.
 
 - **Frontend Mobile:** React Native 0.81, Expo SDK 54, TypeScript (modo estrito, zero uso de `any`).
-- **Design System:** Estética *Glassmorphism* escura (WCAG AA) com `expo-blur`, `expo-linear-gradient` e `@expo/vector-icons`.
-- **Feedback Sensorial:** `expo-haptics` para respostas táteis e microinterações temporárias de confirmação visual.
+- **Design System:** Suporte a dois temas visuais completos:
+  - **Tema Pastel Calmante:** Fundo em gradiente suave lavanda/céu, cartões brancos com sombras orgânicas e tags de identificação com fitas 3D gradientes (*ribbon badges*), otimizado para redução de ansiedade sensorial.
+  - **Tema Glassmorphism:** Fundo escuro profundo (WCAG AA) com `expo-blur`, `expo-linear-gradient` e esferas de luz difusa.
+- **Feedback Sensorial:** `expo-haptics` para respostas táteis ao toque e microinterações temporárias de confirmação visual.
 - **Manipulação de Área de Transferência:** `expo-clipboard` para colar a mensagem de entrada e copiar a sugestão ou análise completa com um toque.
 - **Camada de IA:** **Vercel AI SDK** (`ai` e `@ai-sdk/google`).
-  > **Atenção:** O modelo utilizado é o **`gemini-3.5-flash-lite`** do Google, e **não** o Gemini 1.5. A integração utiliza a biblioteca aberta da Vercel para comunicação direta com a API do Google, sem necessidade de conta ou servidores intermediários da Vercel.
+  > **Atenção:** O modelo utilizado é o **`gemini-3.5-flash-lite`** do Google. A integração utiliza a biblioteca aberta da Vercel para comunicação direta com a API do Google, sem necessidade de conta ou servidores intermediários da Vercel.
 
 ---
 
-##  Fluxo Principal de Dados
+## 🔄 Fluxo Principal de Dados
 
 ```
 [ Entrada do Usuário ] (MessageInput: digitação ou colagem rápida com haptics)
@@ -51,7 +53,7 @@ O projeto foi desenvolvido obrigatoriamente para **Mobile** com **React Native**
 
 ---
 
-##  Estrutura do Repositório
+## 📂 Estrutura do Repositório
 
 ```text
 reframe-ia/
@@ -61,13 +63,13 @@ reframe-ia/
 ├── assets/                      # Ícones e splash screen nativos
 ├── src/
 │   ├── components/              # Componentes reutilizáveis de interface
-│   │   ├── GlassCard.tsx        # Container com efeito glassmorphism e blur
-│   │   ├── GradientBackground.tsx# Fundo em gradiente suave
+│   │   ├── GlassCard.tsx        # Container com efeito glassmorphism ou cartões pastel
+│   │   ├── GradientBackground.tsx# Fundo em gradiente adaptável ao tema
 │   │   ├── MessageInput.tsx     # Campo multiline com contador, botão colar e limpar
 │   │   ├── PrimaryButton.tsx    # Botão tátil acessível (alvo mínimo de 44x44 pt)
-│   │   └── ReframeResult.tsx    # Card de exibição estruturada e ações de cópia
+│   │   └── ReframeResult.tsx    # Card de exibição com Ribbon Badges e ações de cópia
 │   ├── constants/               # Constantes e tokens de design
-│   │   ├── colors.ts            # Paleta de cores WCAG AA
+│   │   ├── colors.ts            # Paletas de cores (Dark WCAG AA e Pastel Calming)
 │   │   ├── prompts.ts           # Prompt do sistema (diretrizes éticas e schema JSON)
 │   │   └── theme.ts             # Espaçamentos, raios e tipografia padronizados
 │   ├── hooks/
@@ -88,7 +90,7 @@ reframe-ia/
 
 ---
 
-##  Configuração de Variáveis de Ambiente
+## 🔑 Configuração de Variáveis de Ambiente
 
 O aplicativo lê a chave de API exclusivamente a partir de variáveis de ambiente gerenciadas pelo Expo:
 
@@ -105,7 +107,7 @@ O aplicativo lê a chave de API exclusivamente a partir de variáveis de ambient
 
 ---
 
-##  Como Executar o Projeto
+## 🚀 Como Executar o Projeto
 
 ### Pré-requisitos
 - Node.js >= 20.x
@@ -130,7 +132,7 @@ O aplicativo lê a chave de API exclusivamente a partir de variáveis de ambient
 
 ---
 
-##  Qualidade de Código & Testes
+## 🧪 Qualidade de Código & Testes
 
 O projeto conta com validações automatizadas abrangendo segurança, tipagem e requisitos de acessibilidade:
 
@@ -150,8 +152,38 @@ npm run typecheck
 
 ---
 
+## 🔒 Considerações de Segurança
+
+- A chave de API do Gemini é carregada exclusivamente a partir das variáveis de ambiente e está excluída do controle de versão pelo `.gitignore`.
+- Variáveis com prefixo `EXPO_PUBLIC_` são embutidas no pacote compilado pelo Expo/Metro. Para um lançamento comercial em lojas de aplicativos, recomenda-se transicionar para um backend proxy (BFF ou Edge Function) ou restringir a chave de API no Google Cloud por pacote e SHA-1.
+
+---
+
+## ⚠️ Limitações & Escopo Ético
+
+- **Conectividade:** É necessária conexão com a internet para as requisições ao Gemini 3.5 Flash Lite.
+- **Natureza Probabilística:** As interpretações geradas pela IA são sugestões probabilísticas para reflexão e nunca devem ser tratadas como diagnósticos ou avaliações psicológicas definitivas.
+- **Uso Não-Médico:** O ReframeIA não substitui terapia, acompanhamento psicológico ou orientação médica profissional.
+- **Privacidade:** Mensagens contendo senhas, dados bancários ou informações de identificação estritamente confidenciais não devem ser inseridas.
+
+---
+
 ## ⚙ Boas Práticas Git & CI/CD
 
 - **Branches:** O projeto adota fluxo baseado em branches (`main` para produção/estável e `develop` para integração e desenvolvimento contínuo).
-- **Conventional Commits:** Histórico com prefixos padronizados (`feat:`, `chore:`, `test:`, `docs:`, `ci:`).
+- **Conventional Commits:** Histórico com prefixos padronizados (`feat:`, `chore:`, `test:`, `docs:`, `ci:`, `refactor:`).
 - **GitHub Actions:** Pipeline automatizado em `.github/workflows/ci.yml` que valida a compilação do TypeScript (`npm run typecheck`) e roda a suite de testes (`npm test`) a cada `push` e `pull_request` nos branches `main` e `develop`.
+
+---
+
+## 📄 Licença
+
+MIT
+
+---
+
+## 👤 Autor
+
+**Rogerio Bianchini**
+
+Projeto desenvolvido para disciplina de desenvolvimento mobile, 2026.
