@@ -4,12 +4,13 @@
  * to the Gemini model and renders the parsed structured response.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -23,10 +24,13 @@ import { MessageInput } from './src/components/MessageInput';
 import { PrimaryButton } from './src/components/PrimaryButton';
 import { ReframeResult } from './src/components/ReframeResult';
 import { useReframe } from './src/hooks/useReframe';
-import { colors } from './src/constants/colors';
+import { colors, pastelColors, AppTheme } from './src/constants/colors';
 import { radius, spacing, typography } from './src/constants/theme';
 
 export default function App() {
+  const [theme, setTheme] = useState<AppTheme>('pastel');
+  const isPastel = theme === 'pastel';
+
   const {
     status,
     message,
@@ -43,12 +47,16 @@ export default function App() {
   const canSubmit = message.trim().length > 0 && !loading;
 
   return (
-    <GradientBackground>
-      <StatusBar style="light" />
+    <GradientBackground theme={theme}>
+      <StatusBar style={isPastel ? 'dark' : 'light'} />
 
-      {/* Esferas decorativas de fundo para revelar o efeito glassmorphism com blur */}
-      <View style={styles.blobBlue} pointerEvents="none" />
-      <View style={styles.blobPurple} pointerEvents="none" />
+      {/* Esferas decorativas ativas apenas no tema escuro para o contraste do blur */}
+      {!isPastel && (
+        <>
+          <View style={styles.blobBlue} pointerEvents="none" />
+          <View style={styles.blobPurple} pointerEvents="none" />
+        </>
+      )}
 
       <SafeAreaView style={styles.safe}>
         <KeyboardAvoidingView
@@ -62,13 +70,63 @@ export default function App() {
           >
             {/* Cabeçalho da Aplicação */}
             <View style={styles.header}>
-              <View style={styles.logoRow}>
-                <View style={styles.iconCircle}>
-                  <Feather name="shield" size={20} color={colors.accent} />
+              <View style={styles.headerTopRow}>
+                <View style={styles.logoRow}>
+                  <View
+                    style={[
+                      styles.iconCircle,
+                      isPastel && styles.iconCirclePastel,
+                    ]}
+                  >
+                    <Feather
+                      name="shield"
+                      size={20}
+                      color={isPastel ? pastelColors.primary : colors.accent}
+                    />
+                  </View>
+                  <Text style={[styles.title, isPastel && styles.titlePastel]}>
+                    ReframeIA
+                  </Text>
                 </View>
-                <Text style={styles.title}>ReframeIA</Text>
+
+                {/* Alternador de tema para comparação direta */}
+                <Pressable
+                  onPress={() =>
+                    setTheme((prev) => (prev === 'pastel' ? 'dark' : 'pastel'))
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel="Alternar tema visual"
+                  accessibilityHint="Alterna entre o visual pastel claro com cartões brancos e o visual escuro com glassmorphism"
+                  style={({ pressed }) => [
+                    styles.themeToggle,
+                    isPastel ? styles.themeTogglePastel : styles.themeToggleDark,
+                    pressed && styles.themeTogglePressed,
+                  ]}
+                >
+                  <Feather
+                    name={isPastel ? 'moon' : 'sun'}
+                    size={14}
+                    color={isPastel ? pastelColors.primary : colors.accent}
+                  />
+                  <Text
+                    style={[
+                      styles.themeToggleText,
+                      isPastel
+                        ? styles.themeToggleTextPastel
+                        : styles.themeToggleTextDark,
+                    ]}
+                  >
+                    {isPastel ? 'Visual Pastel' : 'Visual Glass'}
+                  </Text>
+                </Pressable>
               </View>
-              <Text style={styles.subtitle}>
+
+              <Text
+                style={[
+                  styles.subtitle,
+                  isPastel && styles.subtitlePastel,
+                ]}
+              >
                 Reinterprete mensagens sociais ambíguas com serenidade e empatia.
               </Text>
             </View>
@@ -83,6 +141,7 @@ export default function App() {
                   disabled={isFormDisabled}
                   error={status === 'error' ? error : null}
                   placeholder="Cole ou digite aqui uma mensagem ambígua recebida..."
+                  theme={theme}
                 />
 
                 <PrimaryButton
@@ -94,13 +153,29 @@ export default function App() {
                   accessibilityLabel="Analisar mensagem"
                   accessibilityHint="Envia a mensagem digitada para análise e reinterpretação pela IA"
                   style={styles.submitButton}
+                  theme={theme}
                 />
 
                 {/* Feedback intermediário enquanto a requisição está em andamento */}
                 {loading && (
-                  <GlassCard intensity={30} style={styles.loadingCard}>
-                    <ActivityIndicator size="small" color={colors.accent} />
-                    <Text style={styles.loadingText}>
+                  <GlassCard
+                    intensity={30}
+                    theme={theme}
+                    style={[
+                      styles.loadingCard,
+                      isPastel && styles.loadingCardPastel,
+                    ]}
+                  >
+                    <ActivityIndicator
+                      size="small"
+                      color={isPastel ? pastelColors.primary : colors.accent}
+                    />
+                    <Text
+                      style={[
+                        styles.loadingText,
+                        isPastel && styles.loadingTextPastel,
+                      ]}
+                    >
                       Analisando nuances e gerando interpretações calmas...
                     </Text>
                   </GlassCard>
@@ -112,26 +187,66 @@ export default function App() {
             {result && (
               <View style={styles.section}>
                 {/* Citação da mensagem original submetida */}
-                <GlassCard intensity={30} style={styles.originalCard}>
+                <GlassCard
+                  intensity={30}
+                  theme={theme}
+                  style={[
+                    styles.originalCard,
+                    isPastel && styles.originalCardPastel,
+                  ]}
+                >
                   <View style={styles.originalHeader}>
-                    <Feather name="message-circle" size={14} color={colors.textSecondary} />
-                    <Text style={styles.originalLabel}>Mensagem analisada</Text>
+                    <Feather
+                      name="message-circle"
+                      size={14}
+                      color={
+                        isPastel
+                          ? pastelColors.textSecondary
+                          : colors.textSecondary
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.originalLabel,
+                        isPastel && styles.originalLabelPastel,
+                      ]}
+                    >
+                      Mensagem analisada
+                    </Text>
                   </View>
-                  <Text style={styles.originalText}>"{message}"</Text>
+                  <Text
+                    style={[
+                      styles.originalText,
+                      isPastel && styles.originalTextPastel,
+                    ]}
+                  >
+                    "{message}"
+                  </Text>
                 </GlassCard>
 
                 {/* Componente estruturado com tom, interpretações e ações de cópia */}
-                <ReframeResult result={result} />
+                <ReframeResult result={result} theme={theme} />
 
                 {/* Ação de Reset: Nova Análise para retornar ao estado inicial */}
                 <PrimaryButton
                   title="Nova Análise"
                   onPress={reset}
                   variant="secondary"
-                  icon={<Feather name="rotate-ccw" size={16} color={colors.textPrimary} />}
+                  icon={
+                    <Feather
+                      name="rotate-ccw"
+                      size={16}
+                      color={
+                        isPastel
+                          ? pastelColors.textPrimary
+                          : colors.textPrimary
+                      }
+                    />
+                  }
                   accessibilityLabel="Iniciar nova análise"
                   accessibilityHint="Limpa a análise atual e retorna ao formulário inicial"
                   style={styles.resetButton}
+                  theme={theme}
                 />
               </View>
             )}
@@ -158,11 +273,16 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: spacing.xs,
   },
+  headerTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
+  },
   logoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs + 2,
-    marginBottom: spacing.xs - 2,
   },
   iconCircle: {
     width: 36,
@@ -174,14 +294,63 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  iconCirclePastel: {
+    backgroundColor: 'rgba(14, 165, 233, 0.12)',
+    borderColor: pastelColors.accent,
+  },
   title: {
     ...typography.title,
     color: colors.textPrimary,
+  },
+  titlePastel: {
+    color: pastelColors.textPrimary,
   },
   subtitle: {
     ...typography.subtitle,
     color: colors.textSecondary,
     marginTop: 2,
+  },
+  subtitlePastel: {
+    color: pastelColors.textSecondary,
+  },
+  themeToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 44,
+    minWidth: 44,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  themeTogglePastel: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: pastelColors.cardBorder,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  themeToggleDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1,
+    borderColor: colors.glassBorder,
+  },
+  themeTogglePressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.96 }],
+  },
+  themeToggleText: {
+    ...typography.caption,
+    fontWeight: '600',
+  },
+  themeToggleTextPastel: {
+    color: pastelColors.primary,
+  },
+  themeToggleTextDark: {
+    color: colors.textPrimary,
   },
   section: {
     gap: spacing.md,
@@ -197,14 +366,39 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     borderRadius: radius.md,
   },
+  loadingCardPastel: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: pastelColors.cardBorder,
+    borderRadius: 20,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+  },
   loadingText: {
     ...typography.caption,
     color: colors.accent,
     fontWeight: '500',
   },
+  loadingTextPastel: {
+    color: pastelColors.primary,
+  },
   originalCard: {
     borderRadius: radius.md,
     padding: spacing.sm,
+  },
+  originalCardPastel: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: pastelColors.cardBorder,
+    borderRadius: 20,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
   },
   originalHeader: {
     flexDirection: 'row',
@@ -219,10 +413,16 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
+  originalLabelPastel: {
+    color: pastelColors.textSecondary,
+  },
   originalText: {
     ...typography.body,
     color: colors.textPrimary,
     fontStyle: 'italic',
+  },
+  originalTextPastel: {
+    color: pastelColors.textPrimary,
   },
   resetButton: {
     marginTop: spacing.sm,

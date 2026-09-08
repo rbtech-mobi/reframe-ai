@@ -61,6 +61,9 @@ Module.prototype.require = function (id) {
   if (id === 'expo-blur') {
     return { BlurView: 'BlurView' };
   }
+  if (id === 'expo-linear-gradient') {
+    return { LinearGradient: 'LinearGradient' };
+  }
   if (id === '@expo/vector-icons') {
     return { Feather: () => null, Ionicons: () => null };
   }

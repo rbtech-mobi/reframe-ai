@@ -17,4 +17,28 @@ export const colors = {
   success: '#10B981',
 } as const;
 
+/**
+ * Calming pastel palette designed for neurodivergent accessibility.
+ * Transitioning from soft sky-blue to warm pastel lavender with high-contrast slate text.
+ */
+export const pastelColors = {
+  bgTop: '#DCE6F8',
+  bgBottom: '#D8CDF7',
+  cardBg: '#FFFFFF',
+  cardBorder: '#E2E8F0',
+  ribbonStart: '#0EA5E9',
+  ribbonEnd: '#2563EB',
+  ribbonFold: '#1E40AF',
+  primary: '#2563EB',
+  accent: '#0EA5E9',
+  textPrimary: '#1E293B',
+  textSecondary: '#64748B',
+  danger: '#EF4444',
+  success: '#10B981',
+  chipBg: 'rgba(14, 165, 233, 0.10)',
+  chipBorder: 'rgba(14, 165, 233, 0.25)',
+} as const;
+
+export type AppTheme = 'pastel' | 'dark';
 export type ColorToken = keyof typeof colors;
+

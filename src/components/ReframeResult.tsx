@@ -14,13 +14,42 @@ import {
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { GlassCard } from './GlassCard';
 import type { ReframeResult as ReframeResultType } from '../types';
-import { colors } from '../constants/colors';
+import { colors, pastelColors, AppTheme } from '../constants/colors';
 import { radius, spacing, typography } from '../constants/theme';
 
 interface ReframeResultProps {
   result: ReframeResultType;
+  theme?: AppTheme;
+}
+
+/**
+ * Visual ribbon badge pinned to top-left with gradient and 3D folded flap.
+ */
+function RibbonBadge({
+  title,
+  icon,
+}: {
+  title: string;
+  icon: keyof typeof Feather.glyphMap;
+}) {
+  return (
+    <View style={styles.ribbonWrapper}>
+      <LinearGradient
+        colors={[pastelColors.ribbonStart, pastelColors.ribbonEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.ribbonBadge}
+      >
+        <Feather name={icon} size={13} color="#FFFFFF" />
+        <Text style={styles.ribbonTitle}>{title}</Text>
+      </LinearGradient>
+      {/* Dobra 3D visual da fita no canto inferior */}
+      <View style={styles.ribbonFlap} />
+    </View>
+  );
 }
 
 /**
@@ -47,12 +76,13 @@ export function formatFullResult(result: ReframeResultType): string {
  * and suggested reply. Provides independent copy actions for the reply and
  * for the full result, with tactile (expo-haptics) and visual feedback.
  */
-export function ReframeResult({ result }: ReframeResultProps) {
+export function ReframeResult({ result, theme = 'pastel' }: ReframeResultProps) {
   const [copiedReply, setCopiedReply] = useState(false);
   const [copiedAll, setCopiedAll] = useState(false);
 
   const replyTimerRef = useRef<NodeJS.Timeout | null>(null);
   const allTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isPastel = theme === 'pastel';
 
   // Limpa timers ao desmontar para evitar vazamento de memória
   useEffect(() => {
@@ -107,39 +137,84 @@ export function ReframeResult({ result }: ReframeResultProps) {
   return (
     <View style={styles.container}>
       {/* 1. Tom Detectado */}
-      <GlassCard intensity={45} style={styles.sectionCard}>
-        <View style={styles.sectionHeader}>
-          <Feather name="compass" size={18} color={colors.accent} />
-          <Text style={styles.sectionTitle}>Tom detectado</Text>
-        </View>
-        <Text style={styles.toneText}>{result.tone}</Text>
+      <GlassCard
+        intensity={45}
+        theme={theme}
+        style={[styles.sectionCard, isPastel && styles.ribbonCard]}
+      >
+        {isPastel ? (
+          <RibbonBadge title="Tom Detectado" icon="compass" />
+        ) : (
+          <View style={styles.sectionHeader}>
+            <Feather name="compass" size={18} color={colors.accent} />
+            <Text style={styles.sectionTitle}>Tom detectado</Text>
+          </View>
+        )}
+        <Text style={[styles.toneText, isPastel && styles.toneTextPastel]}>
+          {result.tone}
+        </Text>
       </GlassCard>
 
       {/* 2. Interpretações Alternativas */}
-      <GlassCard intensity={45} style={styles.sectionCard}>
-        <View style={styles.sectionHeader}>
-          <Feather name="layers" size={18} color={colors.accent} />
-          <Text style={styles.sectionTitle}>Interpretações alternativas</Text>
-        </View>
+      <GlassCard
+        intensity={45}
+        theme={theme}
+        style={[styles.sectionCard, isPastel && styles.ribbonCard]}
+      >
+        {isPastel ? (
+          <RibbonBadge title="Interpretações Alternativas" icon="layers" />
+        ) : (
+          <View style={styles.sectionHeader}>
+            <Feather name="layers" size={18} color={colors.accent} />
+            <Text style={styles.sectionTitle}>Interpretações alternativas</Text>
+          </View>
+        )}
         <View style={styles.interpretationsList}>
           {result.interpretations.map((item, index) => (
             <View key={index} style={styles.interpretationItem}>
-              <View style={styles.indexBadge}>
-                <Text style={styles.indexBadgeText}>{index + 1}</Text>
+              <View
+                style={[
+                  styles.indexBadge,
+                  isPastel && styles.indexBadgePastel,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.indexBadgeText,
+                    isPastel && styles.indexBadgeTextPastel,
+                  ]}
+                >
+                  {index + 1}
+                </Text>
               </View>
-              <Text style={styles.interpretationText}>{item}</Text>
+              <Text
+                style={[
+                  styles.interpretationText,
+                  isPastel && styles.interpretationTextPastel,
+                ]}
+              >
+                {item}
+              </Text>
             </View>
           ))}
         </View>
       </GlassCard>
 
       {/* 3. Resposta Sugerida com Ação Independente de Cópia */}
-      <GlassCard intensity={50} style={styles.sectionCard}>
+      <GlassCard
+        intensity={50}
+        theme={theme}
+        style={[styles.sectionCard, isPastel && styles.ribbonCard]}
+      >
         <View style={styles.sectionHeaderBetween}>
-          <View style={styles.sectionHeader}>
-            <Feather name="message-square" size={18} color={colors.accent} />
-            <Text style={styles.sectionTitle}>Resposta sugerida</Text>
-          </View>
+          {isPastel ? (
+            <RibbonBadge title="Sugestão de Resposta" icon="message-square" />
+          ) : (
+            <View style={styles.sectionHeader}>
+              <Feather name="message-square" size={18} color={colors.accent} />
+              <Text style={styles.sectionTitle}>Resposta sugerida</Text>
+            </View>
+          )}
 
           {/* Ação A: Copiar apenas a resposta sugerida */}
           <Pressable
@@ -149,7 +224,8 @@ export function ReframeResult({ result }: ReframeResultProps) {
             accessibilityHint="Copia o texto da resposta sugerida para a área de transferência"
             style={({ pressed }) => [
               styles.copyIconButton,
-              copiedReply && styles.copyButtonSuccess,
+              isPastel && styles.copyIconButtonPastel,
+              copiedReply && (isPastel ? styles.copyButtonPastelSuccess : styles.copyButtonSuccess),
               pressed && styles.buttonPressed,
             ]}
           >
@@ -162,8 +238,17 @@ export function ReframeResult({ result }: ReframeResultProps) {
               </>
             ) : (
               <>
-                <Feather name="copy" size={15} color={colors.accent} />
-                <Text style={[styles.copyButtonText, styles.textAccent]}>
+                <Feather
+                  name="copy"
+                  size={15}
+                  color={isPastel ? pastelColors.accent : colors.accent}
+                />
+                <Text
+                  style={[
+                    styles.copyButtonText,
+                    isPastel ? styles.textPastelAccent : styles.textAccent,
+                  ]}
+                >
                   Copiar resposta
                 </Text>
               </>
@@ -171,7 +256,7 @@ export function ReframeResult({ result }: ReframeResultProps) {
           </Pressable>
         </View>
 
-        <Text style={styles.replyText}>
+        <Text style={[styles.replyText, isPastel && styles.replyTextPastel]}>
           {result.suggestedReply || 'Nenhuma resposta específica necessária.'}
         </Text>
       </GlassCard>
@@ -185,7 +270,8 @@ export function ReframeResult({ result }: ReframeResultProps) {
           accessibilityHint="Copia o tom detectado, as interpretações alternativas e a resposta sugerida"
           style={({ pressed }) => [
             styles.copyAllButton,
-            copiedAll && styles.copyAllButtonSuccess,
+            isPastel && styles.copyAllButtonPastel,
+            copiedAll && (isPastel ? styles.copyAllButtonPastelSuccess : styles.copyAllButtonSuccess),
             pressed && styles.buttonPressed,
           ]}
         >
@@ -198,8 +284,17 @@ export function ReframeResult({ result }: ReframeResultProps) {
             </>
           ) : (
             <>
-              <Feather name="copy" size={18} color={colors.textPrimary} />
-              <Text style={styles.copyAllText}>
+              <Feather
+                name="copy"
+                size={18}
+                color={isPastel ? pastelColors.textPrimary : colors.textPrimary}
+              />
+              <Text
+                style={[
+                  styles.copyAllText,
+                  isPastel && styles.copyAllTextPastel,
+                ]}
+              >
                 Copiar resultado completo
               </Text>
             </>
@@ -280,6 +375,96 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     fontStyle: 'italic',
     marginTop: spacing.xs,
+  },
+  ribbonWrapper: {
+    marginBottom: spacing.xs + 2,
+    alignSelf: 'flex-start',
+  },
+  ribbonBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    gap: 6,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  ribbonTitle: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 13,
+    letterSpacing: 0.3,
+  },
+  ribbonFlap: {
+    position: 'absolute',
+    bottom: -4,
+    left: 4,
+    width: 0,
+    height: 0,
+    borderTopWidth: 4,
+    borderRightWidth: 4,
+    borderTopColor: pastelColors.ribbonFold,
+    borderRightColor: 'transparent',
+  },
+  ribbonCard: {
+    paddingTop: 16,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+  },
+  toneTextPastel: {
+    color: pastelColors.textPrimary,
+    fontWeight: '500',
+    lineHeight: 24,
+  },
+  interpretationTextPastel: {
+    color: pastelColors.textPrimary,
+    lineHeight: 24,
+  },
+  indexBadgePastel: {
+    backgroundColor: 'rgba(14, 165, 233, 0.12)',
+    borderColor: pastelColors.accent,
+  },
+  indexBadgeTextPastel: {
+    color: pastelColors.primary,
+  },
+  replyTextPastel: {
+    color: pastelColors.textPrimary,
+    lineHeight: 24,
+  },
+  copyIconButtonPastel: {
+    backgroundColor: pastelColors.chipBg,
+    borderWidth: 1,
+    borderColor: pastelColors.chipBorder,
+  },
+  copyButtonPastelSuccess: {
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    borderColor: colors.success,
+  },
+  textPastelAccent: {
+    color: pastelColors.accent,
+  },
+  copyAllButtonPastel: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: pastelColors.cardBorder,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  copyAllButtonPastelSuccess: {
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    borderColor: colors.success,
+  },
+  copyAllTextPastel: {
+    color: pastelColors.textPrimary,
   },
   copyIconButton: {
     flexDirection: 'row',

@@ -14,7 +14,7 @@ import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { Feather } from '@expo/vector-icons';
 import { GlassCard } from './GlassCard';
-import { colors } from '../constants/colors';
+import { colors, pastelColors, AppTheme } from '../constants/colors';
 import { radius, spacing, typography } from '../constants/theme';
 
 interface MessageInputProps {
@@ -25,6 +25,7 @@ interface MessageInputProps {
   maxLength?: number;
   disabled?: boolean;
   error?: string | null;
+  theme?: AppTheme;
 }
 
 /**
@@ -39,6 +40,7 @@ export function MessageInput({
   maxLength = 1000,
   disabled = false,
   error,
+  theme = 'pastel',
 }: MessageInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [justPasted, setJustPasted] = useState(false);
@@ -105,14 +107,17 @@ export function MessageInput({
   };
 
   const hasContent = value.trim().length > 0;
+  const isPastel = theme === 'pastel';
 
   return (
     <View style={styles.container}>
       <GlassCard
         intensity={50}
+        theme={theme}
         style={[
           styles.card,
-          isFocused ? styles.cardFocused : null,
+          isPastel && styles.cardPastel,
+          isFocused ? (isPastel ? styles.cardFocusedPastel : styles.cardFocused) : null,
           error ? styles.cardError : null,
         ]}
       >
@@ -120,22 +125,22 @@ export function MessageInput({
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={colors.textSecondary}
+          placeholderTextColor={isPastel ? pastelColors.textSecondary : colors.textSecondary}
           multiline
           maxLength={maxLength}
           editable={!disabled}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          style={styles.textInput}
+          style={[styles.textInput, isPastel && styles.textInputPastel]}
           textAlignVertical="top"
           accessibilityLabel="Campo de texto para mensagem ambígua"
           accessibilityHint="Digite ou cole aqui a mensagem que você gostaria de reinterpretar"
         />
 
         {/* Barra de ações inferiores do input */}
-        <View style={styles.actionToolbar}>
+        <View style={[styles.actionToolbar, isPastel && styles.actionToolbarPastel]}>
           {/* Contador de caracteres */}
-          <Text style={styles.charCounter}>
+          <Text style={[styles.charCounter, isPastel && styles.charCounterPastel]}>
             {value.length}/{maxLength}
           </Text>
 
@@ -150,11 +155,12 @@ export function MessageInput({
                 accessibilityHint="Apaga todo o conteúdo atual do campo de texto"
                 style={({ pressed }) => [
                   styles.actionButton,
+                  isPastel && styles.actionButtonPastel,
                   pressed && styles.buttonPressed,
                 ]}
               >
-                <Feather name="x" size={16} color={colors.textSecondary} />
-                <Text style={styles.actionButtonText}>Limpar</Text>
+                <Feather name="x" size={16} color={isPastel ? pastelColors.textSecondary : colors.textSecondary} />
+                <Text style={[styles.actionButtonText, isPastel && styles.textPastelSecondary]}>Limpar</Text>
               </Pressable>
             )}
 
@@ -167,7 +173,8 @@ export function MessageInput({
               accessibilityHint="Cola o texto copiado diretamente no campo de mensagem"
               style={({ pressed }) => [
                 styles.actionButton,
-                justPasted && styles.actionButtonSuccess,
+                isPastel && styles.actionButtonPastelChip,
+                justPasted && (isPastel ? styles.actionButtonPastelSuccess : styles.actionButtonSuccess),
                 pressed && styles.buttonPressed,
               ]}
             >
@@ -180,8 +187,8 @@ export function MessageInput({
                 </>
               ) : (
                 <>
-                  <Feather name="clipboard" size={16} color={colors.accent} />
-                  <Text style={[styles.actionButtonText, styles.textAccent]}>
+                  <Feather name="clipboard" size={16} color={isPastel ? pastelColors.accent : colors.accent} />
+                  <Text style={[styles.actionButtonText, isPastel ? styles.textPastelAccent : styles.textAccent]}>
                     Colar
                   </Text>
                 </>
@@ -211,8 +218,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.glassBorder,
   },
+  cardPastel: {
+    borderRadius: 20,
+    backgroundColor: pastelColors.cardBg,
+    borderColor: pastelColors.cardBorder,
+  },
   cardFocused: {
     borderColor: colors.accent,
+  },
+  cardFocusedPastel: {
+    borderColor: pastelColors.accent,
   },
   cardError: {
     borderColor: colors.danger,
@@ -226,6 +241,10 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingBottom: spacing.sm,
   },
+  textInputPastel: {
+    color: pastelColors.textPrimary,
+    lineHeight: 22,
+  },
   actionToolbar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -235,9 +254,15 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255, 255, 255, 0.08)',
     marginTop: spacing.xs,
   },
+  actionToolbarPastel: {
+    borderTopColor: '#F1F5F9',
+  },
   charCounter: {
     ...typography.caption,
     color: colors.textSecondary,
+  },
+  charCounterPastel: {
+    color: pastelColors.textSecondary,
   },
   buttonsGroup: {
     flexDirection: 'row',
@@ -254,6 +279,29 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     borderRadius: radius.sm,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  actionButtonPastel: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 8,
+  },
+  actionButtonPastelChip: {
+    backgroundColor: pastelColors.chipBg,
+    borderWidth: 1,
+    borderColor: pastelColors.chipBorder,
+    borderRadius: 8,
+  },
+  actionButtonPastelSuccess: {
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    borderColor: colors.success,
+  },
+  textPastelSecondary: {
+    color: pastelColors.textSecondary,
+  },
+  textPastelAccent: {
+    color: pastelColors.accent,
+    fontWeight: '700',
   },
   actionButtonSuccess: {
     backgroundColor: 'rgba(16, 185, 129, 0.15)',

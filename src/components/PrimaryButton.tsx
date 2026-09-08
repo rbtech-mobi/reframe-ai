@@ -14,7 +14,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors } from '../constants/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, pastelColors, AppTheme } from '../constants/colors';
 import { radius, spacing, typography } from '../constants/theme';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'glass';
@@ -25,6 +26,7 @@ interface PrimaryButtonProps {
   loading?: boolean;
   disabled?: boolean;
   variant?: ButtonVariant;
+  theme?: AppTheme;
   icon?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   accessibilityLabel: string;
@@ -41,6 +43,7 @@ export function PrimaryButton({
   loading = false,
   disabled = false,
   variant = 'primary',
+  theme = 'pastel',
   icon,
   style,
   accessibilityLabel,
@@ -61,17 +64,64 @@ export function PrimaryButton({
     onPress();
   };
 
+  const isPastel = theme === 'pastel';
+
   const buttonStyleByVariant = {
-    primary: styles.buttonPrimary,
-    secondary: styles.buttonSecondary,
+    primary: isPastel ? styles.buttonPastelPrimary : styles.buttonPrimary,
+    secondary: isPastel ? styles.buttonPastelSecondary : styles.buttonSecondary,
     glass: styles.buttonGlass,
   }[variant];
 
   const textStyleByVariant = {
-    primary: styles.textPrimaryVariant,
-    secondary: styles.textSecondaryVariant,
+    primary: isPastel ? styles.textWhite : styles.textPrimaryVariant,
+    secondary: isPastel ? styles.textPastelSecondary : styles.textSecondaryVariant,
     glass: styles.textGlassVariant,
   }[variant];
+
+  const renderContent = () => (
+    loading ? (
+      <ActivityIndicator
+        size="small"
+        color={variant === 'primary' ? colors.textPrimary : isPastel ? pastelColors.primary : colors.accent}
+      />
+    ) : (
+      <View style={styles.contentRow}>
+        {icon && <View style={styles.iconWrapper}>{icon}</View>}
+        <Text style={[styles.textBase, textStyleByVariant]}>{title}</Text>
+      </View>
+    )
+  );
+
+  if (isPastel && variant === 'primary' && !disabled) {
+    return (
+      <Pressable
+        onPress={handlePress}
+        disabled={!isInteractive}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={accessibilityHint}
+        accessibilityState={{
+          disabled: !isInteractive,
+          busy: loading,
+        }}
+        style={({ pressed }) => [
+          styles.touchTarget,
+          styles.touchTargetPill,
+          pressed && isInteractive && styles.buttonPressed,
+          style,
+        ]}
+      >
+        <LinearGradient
+          colors={[pastelColors.ribbonStart, pastelColors.ribbonEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradientPill}
+        >
+          {renderContent()}
+        </LinearGradient>
+      </Pressable>
+    );
+  }
 
   return (
     <Pressable
@@ -86,23 +136,14 @@ export function PrimaryButton({
       }}
       style={({ pressed }) => [
         styles.touchTarget,
+        isPastel && styles.touchTargetPill,
         buttonStyleByVariant,
         !isInteractive && styles.buttonDisabled,
         pressed && isInteractive && styles.buttonPressed,
         style,
       ]}
     >
-      {loading ? (
-        <ActivityIndicator
-          size="small"
-          color={variant === 'primary' ? colors.textPrimary : colors.accent}
-        />
-      ) : (
-        <View style={styles.contentRow}>
-          {icon && <View style={styles.iconWrapper}>{icon}</View>}
-          <Text style={[styles.textBase, textStyleByVariant]}>{title}</Text>
-        </View>
-      )}
+      {renderContent()}
     </Pressable>
   );
 }
@@ -117,6 +158,28 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs + 4,
     paddingHorizontal: spacing.md,
   },
+  touchTargetPill: {
+    minHeight: 52,
+    minWidth: 44,
+    borderRadius: 999,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    overflow: 'hidden',
+  },
+  gradientPill: {
+    width: '100%',
+    minHeight: 52,
+    minWidth: 44,
+    borderRadius: 999,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 4,
+  },
   contentRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -130,10 +193,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
+  buttonPastelPrimary: {
+    backgroundColor: pastelColors.primary,
+    borderRadius: 999,
+  },
   buttonSecondary: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
     borderColor: colors.glassBorder,
+  },
+  buttonPastelSecondary: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: pastelColors.cardBorder,
+    borderRadius: 999,
+    minHeight: 52,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   buttonGlass: {
     backgroundColor: colors.glass,
@@ -151,6 +230,12 @@ const styles = StyleSheet.create({
     ...typography.body,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  textWhite: {
+    color: '#FFFFFF',
+  },
+  textPastelSecondary: {
+    color: pastelColors.textPrimary,
   },
   textPrimaryVariant: {
     color: colors.textPrimary,
