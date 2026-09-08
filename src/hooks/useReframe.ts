@@ -39,7 +39,7 @@ export function useReframe(): UseReframeReturn {
     setState((prev) => ({
       ...prev,
       message: text,
-      error: prev.error ? null : prev.error,
+      error: null,
     }));
   }, []);
 

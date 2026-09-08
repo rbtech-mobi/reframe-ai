@@ -1,7 +1,7 @@
 /**
  * Entry point of the ReframeIA application.
- * Temporary integration test: sends a fixed ambiguous message
- * to the Gemini model and renders the parsed structured response.
+ * Main interactive screen featuring input handling, dynamic theme toggling,
+ * structured AI reinterpretation results, and clipboard actions.
  */
 
 import React, { useState } from 'react';
