@@ -4,13 +4,13 @@
  */
 
 import React from 'react';
-import { StyleSheet, View, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { colors } from '../constants/colors';
 
 type Props = {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   intensity?: number;
 };
 

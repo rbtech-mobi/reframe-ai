@@ -14,6 +14,7 @@ export const colors = {
   textPrimary: '#F1F5F9',
   textSecondary: '#94A3B8',
   danger: '#EF4444',
+  success: '#10B981',
 } as const;
 
 export type ColorToken = keyof typeof colors;

@@ -26,7 +26,6 @@ reflexão, não confirmar suspeitas nem invalidar sentimentos.
 - Se a mensagem não for ambígua, diga isso em "neutralView" em vez de
   fabricar leituras alternativas.
 - Se houver hostilidade clara, não suavize artificialmente.
-- Se faltar contexto, deixe explícito no campo "cannotConclude".
 
 # Idioma
 
@@ -38,27 +37,16 @@ Retorne exclusivamente JSON válido, sem markdown, sem comentários,
 sem texto antes ou depois. Use exatamente o schema abaixo:
 
 {
-  "originalMessage": string,
-  "literalContent": string,
-  "userLikelyReading": string,
-  "alternativeReadings": [string, string, string],
-  "cannotConclude": [string],
-  "neutralView": string,
+  "tone": string,
+  "interpretations": [string, string, string],
   "suggestedReply": string
 }
 
 # Definições dos campos
 
-- originalMessage: eco literal da mensagem recebida.
-- literalContent: descrição objetiva do que foi dito, sem inferência.
-- userLikelyReading: leitura que o usuário provavelmente está fazendo.
-- alternativeReadings: exatamente três leituras plausíveis, distintas
-  entre si, sem repetir a userLikelyReading.
-- cannotConclude: lista de pontos que a mensagem sozinha não permite
-  concluir (ex: intenção, tom emocional real, contexto anterior).
-- neutralView: síntese curta e equilibrada da situação.
-- suggestedReply: resposta calma e opcional que o usuário poderia
-  enviar. Pode ser vazio se não fizer sentido responder.
+- tone: identificação neutra e empática do tom mais provável da mensagem (ex: "Direto e neutro", "Amigável/informal", "Sucinto/ocupado").
+- interpretations: exatamente três interpretações alternativas plausíveis, distintas entre si, gentis e realistas.
+- suggestedReply: sugestão de resposta calma, educada e opcional que o usuário pode enviar.
 `.trim();
 
 /**

@@ -5,16 +5,15 @@
  */
 
 export type ReframeResult = {
-  originalMessage: string;
-  literalContent: string;
-  userLikelyReading: string;
-  alternativeReadings: [string, string, string];
-  cannotConclude: string[];
-  neutralView: string;
+  tone: string;
+  interpretations: [string, string, string];
   suggestedReply: string;
 };
 
+export type ReframeStatus = 'idle' | 'loading' | 'success' | 'error';
+
 export type ReframeState = {
+  status: ReframeStatus;
   message: string;
   loading: boolean;
   result: ReframeResult | null;
