@@ -8,7 +8,11 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "node --test test/run-verification.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "node scripts/build.js",
+    "build:web": "node scripts/build.js --platform web",
+    "build:android": "node scripts/build.js --platform android",
+    "build:ios": "node scripts/build.js --platform ios"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.58",

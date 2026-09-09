@@ -144,6 +144,33 @@ npm test
 npm run typecheck
 ```
 
+---
+
+## 📦 Scripts de Build
+
+O projeto dispõe de scripts automatizados para geração de artefatos de produção em `dist/`, executando previamente a checagem estrita de tipos e a suite de testes:
+
+```bash
+# Build completo para todas as plataformas (Web, Android e iOS)
+npm run build
+
+# Build estático otimizado para Web (pronto para deploy em Vercel, Netlify, etc.)
+npm run build:web
+
+# Build de bundles de produção para Android
+npm run build:android
+
+# Build de bundles de produção para iOS
+npm run build:ios
+```
+
+Para compilar pacotes nativos autônomos (.apk / .aab) na nuvem ou localmente, o arquivo `eas.json` já se encontra configurado para uso com o [EAS Build](https://docs.expo.dev/build/introduction/):
+
+```bash
+# Exemplo para gerar APK de teste para Android via EAS
+eas build -p android --profile preview
+```
+
 ### Garantias de Qualidade Verificadas
 - **Zero `console.log` residuais:** Código de produção limpo.
 - **Zero uso de `any`:** 100% tipado estritamente.
